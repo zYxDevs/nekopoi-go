@@ -37,7 +37,7 @@ jobs:
             commit_message="actions: update NekoPoi version `$new_version`"
             git config user.name "Kiizuha"
             git config user.email "kiizuha@gnuweeb.org"
-            git add nekopoi/client.py
+            git add request.go
             git commit -m "$commit_message"
             git push origin HEAD
           else
