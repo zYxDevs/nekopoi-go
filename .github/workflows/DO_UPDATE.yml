@@ -22,18 +22,22 @@ jobs:
         run: |
           go run updater/updater.go
 
+          - name: Extract version from diff
+          id: extract_version
+          run: |
+            diff=$(git diff)
+            new_version=$(echo "$diff" | grep -oE 'appbuildcode", "([0-9]+)"' | awk -F'"' '{print $2}')
+            echo "New version: $new_version" >> $GITHUB_OUTPUT
+
       - name: Check for changes
-        id: extract_version
         run: |
-          diff=$(git diff)
-          new_version=$(echo "$diff" | grep -oE 'appbuildcode", "([0-9]+)"' | awk -F'"' '{print $2}')
-          echo "New version: $new_version"
-          echo "::set-output name=version::$new_version"
+          new_version=$(cat $GITHUB_OUTPUT | grep "New version" | cut -d' ' -f3)
+          echo "Extracted version: $new_version"
 
       - name: Commit and push if changed
         run: |
           if [ -n "$(git status --porcelain)" ]; then
-            new_version="${{ steps.extract_version.outputs.version }}"
+            new_version=$(cat $GITHUB_OUTPUT | grep "New version" | cut -d' ' -f3)
             commit_message="actions: update NekoPoi version `$new_version`"
             git config user.name "Kiizuha"
             git config user.email "kiizuha@gnuweeb.org"
