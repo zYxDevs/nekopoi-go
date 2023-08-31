@@ -26,7 +26,7 @@ jobs:
         id: extract_version
         run: |
           diff=$(git diff)
-          new_version=$(echo "$diff" | grep "appbuildcode" | awk -F'appbuildcode", "' '{print $2}' | awk -F'"' '{print $1}')
+          new_version=$(echo "$diff" | grep -oE 'appbuildcode", "([0-9]+)"' | awk -F'"' '{print $2}')
           echo "New version: $new_version"
           echo "::set-output name=version::$new_version"
 
