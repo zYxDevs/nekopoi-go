@@ -22,12 +22,12 @@ jobs:
         run: |
           go run updater/updater.go
 
-          - name: Extract version from diff
-          id: extract_version
-          run: |
-            diff=$(git diff)
-            new_version=$(echo "$diff" | grep -oE 'appbuildcode", "([0-9]+)"' | awk -F'"' '{print $2}')
-            echo "New version: $new_version" >> $GITHUB_OUTPUT
+      - name: Extract version from diff
+        id: extract_version
+        run: |
+          diff=$(git diff)
+          new_version=$(echo "$diff" | grep -oE 'appbuildcode", "([0-9]+)"' | awk -F'"' '{print $2}')
+          echo "New version: $new_version" >> $GITHUB_OUTPUT
 
       - name: Check for changes
         run: |
