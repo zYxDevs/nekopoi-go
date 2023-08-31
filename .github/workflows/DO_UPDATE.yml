@@ -1,0 +1,47 @@
+name: "Check and update version"
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+jobs:
+  check_and_update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.20"
+
+      - name: Run updater.go
+        run: |
+          go run updater/updater.go
+
+      - name: Check for changes
+        id: extract_version
+        run: |
+          diff=$(git diff)
+          new_version=$(echo "$diff" | grep "appbuildcode" | awk -F'appbuildcode", "' '{print $2}' | awk -F'"' '{print $1}')
+          echo "New version: $new_version"
+          echo "::set-output name=version::$new_version"
+
+      - name: Commit and push if changed
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            new_version="${{ steps.extract_version.outputs.version }}"
+            commit_message="actions: update NekoPoi version `$new_version`"
+            git config user.name "Kiizuha"
+            git config user.email "kiizuha@gnuweeb.org"
+            git add nekopoi/client.py
+            git commit -m "$commit_message"
+            git push origin HEAD
+          else
+            echo "No changes to commit"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
